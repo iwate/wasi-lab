@@ -414,6 +414,7 @@ int main(int argc, char **argv)
         /* system modules */
         js_init_module_std(ctx, "std");
         js_init_module_os(ctx, "os");
+        js_init_module_host(ctx, "host");
 
         /* make 'std' and 'os' visible to non module code */
         if (load_std) {

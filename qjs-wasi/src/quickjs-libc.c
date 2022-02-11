@@ -2815,3 +2815,32 @@ void js_std_eval_binary(JSContext *ctx, const uint8_t *buf, size_t buf_len,
         JS_FreeValue(ctx, val);
     }
 }
+
+extern void hello();
+
+static JSValue js_host_hello(JSContext *ctx, JSValueConst this_val, 
+                                int argc, JSValueConst *argv)
+{
+    hello();
+    return JS_UNDEFINED;
+}
+
+static const JSCFunctionListEntry js_host_funcs[] = {
+    JS_CFUNC_DEF("hello", 0, js_host_hello),
+};
+
+static int js_host_init(JSContext *ctx, JSModuleDef *m)
+{
+    return JS_SetModuleExportList(ctx, m, js_host_funcs,
+                                  countof(js_host_funcs));
+}
+
+JSModuleDef *js_init_module_host(JSContext *ctx, const char *module_name)
+{
+    JSModuleDef *m;
+    m = JS_NewCModule(ctx, module_name, js_host_init);
+    if (!m)
+        return NULL;
+    JS_AddModuleExportList(ctx, m, js_host_funcs, countof(js_host_funcs));
+    return m;
+}
