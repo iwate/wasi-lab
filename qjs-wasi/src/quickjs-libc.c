@@ -2816,17 +2816,66 @@ void js_std_eval_binary(JSContext *ctx, const uint8_t *buf, size_t buf_len,
     }
 }
 
-extern void hello();
+__attribute__((import_name("read")))extern int host_read();
+__attribute__((import_name("write")))extern void host_write(int c);
 
-static JSValue js_host_hello(JSContext *ctx, JSValueConst this_val, 
+static JSValue js_host_read_line(JSContext *ctx, JSValueConst this_val, 
                                 int argc, JSValueConst *argv)
 {
-    hello();
+    int c;
+    DynBuf dbuf;
+    JSValue obj;
+
+    js_std_dbuf_init(ctx, &dbuf);
+    for(;;) {
+        c = host_read();
+        if (c == EOF) {
+            if (dbuf.size == 0) {
+                /* EOF */
+                dbuf_free(&dbuf);
+                return JS_NULL;
+            } else {
+                break;
+            }
+        }
+        if (c == '\n')
+            break;
+        if (dbuf_putc(&dbuf, c)) {
+            dbuf_free(&dbuf);
+            return JS_ThrowOutOfMemory(ctx);
+        }
+    }
+    obj = JS_NewStringLen(ctx, (const char *)dbuf.buf, dbuf.size);
+    dbuf_free(&dbuf);
+    return obj;
+}
+
+static JSValue js_host_write_line(JSContext *ctx, JSValueConst this_val, 
+                                int argc, JSValueConst *argv)
+{
+    int i,j;
+    size_t len;
+    const char *str;
+    
+    for(i = 0; i < argc; i++) {
+        str = JS_ToCStringLen(ctx, &len, argv[i]);
+        if (!str)
+            return JS_EXCEPTION;
+
+        for (j = 0; j < len; j++) {
+            host_write(str[j]);
+        }
+
+        host_write('\n');
+
+        JS_FreeCString(ctx, str);
+    }
     return JS_UNDEFINED;
 }
 
 static const JSCFunctionListEntry js_host_funcs[] = {
-    JS_CFUNC_DEF("hello", 0, js_host_hello),
+    JS_CFUNC_DEF("readLine", 0, js_host_read_line),
+    JS_CFUNC_DEF("writeLine", 1, js_host_write_line),
 };
 
 static int js_host_init(JSContext *ctx, JSModuleDef *m)
