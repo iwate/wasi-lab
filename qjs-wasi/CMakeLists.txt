@@ -27,6 +27,6 @@ add_executable(qjs
     src/qjs.c
     src/quickjs-libc.c
     src/quickjs.c
-    src/repl.c
+    src/ipc.c
 )
 

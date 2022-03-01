@@ -41,8 +41,8 @@
 #include "cutils.h"
 #include "quickjs-libc.h"
 
-extern const uint8_t qjsc_repl[];
-extern const uint32_t qjsc_repl_size;
+// extern const uint8_t qjsc_repl[];
+// extern const uint32_t qjsc_repl_size;
 #ifdef CONFIG_BIGNUM
 extern const uint8_t qjsc_qjscalc[];
 extern const uint32_t qjsc_qjscalc_size;
@@ -415,6 +415,7 @@ int main(int argc, char **argv)
         js_init_module_std(ctx, "std");
         js_init_module_os(ctx, "os");
         js_init_module_host(ctx, "host");
+        js_init_module_ipc(ctx, "ipc");
 
         /* make 'std' and 'os' visible to non module code */
         if (load_std) {
@@ -439,7 +440,7 @@ int main(int argc, char **argv)
                 goto fail;
         }
         if (interactive) {
-            eval_buf(ctx, qjsc_repl, qjsc_repl_size, "<input>", JS_EVAL_TYPE_MODULE);
+            // eval_buf(ctx, qjsc_repl, qjsc_repl_size, "<input>", JS_EVAL_TYPE_MODULE);
         }
         js_std_loop(ctx);
     }

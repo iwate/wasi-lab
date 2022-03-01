@@ -2893,3 +2893,25 @@ JSModuleDef *js_init_module_host(JSContext *ctx, const char *module_name)
     JS_AddModuleExportList(ctx, m, js_host_funcs, countof(js_host_funcs));
     return m;
 }
+
+extern const uint8_t qjsc_ipc[];
+extern const uint32_t qjsc_ipc_size;
+JSModuleDef *js_init_module_ipc(JSContext *ctx, const char *module_name)
+{
+    JSModuleDef *m;
+    JSValue func_val;
+    
+    /* compile the module */
+    func_val = JS_Eval(ctx, qjsc_ipc, qjsc_ipc_size, module_name,
+                        JS_EVAL_TYPE_MODULE|JS_EVAL_FLAG_COMPILE_ONLY);
+    
+    if (JS_IsException(func_val))
+        return NULL;
+    /* XXX: could propagate the exception */
+    js_module_set_import_meta(ctx, func_val, TRUE, FALSE);
+    /* the module is already referenced, so we must free it */
+    m = JS_VALUE_GET_PTR(func_val);
+    JS_FreeValue(ctx, func_val);
+    
+    return m;
+}
