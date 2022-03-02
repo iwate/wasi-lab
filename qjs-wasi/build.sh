@@ -2,7 +2,7 @@
 
 # Install wasienv
 curl https://raw.githubusercontent.com/wasienv/wasienv/master/install.sh | sh
-
+source ~/.profile
 mkdir -p build
 cd build
 wasimake cmake ..
